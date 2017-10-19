@@ -1,4 +1,5 @@
-%Author Bisrat Tekle in DEJ Technology GMBH
+%Author Bisrat Tekle Aweno in DEJ Technology GMBH
+%Rostock, Germany
 %License would be free for anyone to copy and change and distribute or use in commercial 
 %products given the above copyright information is provided.
 
@@ -8,11 +9,55 @@
 %receives the graph in adjacency matrix
 %currently using the MCQ function, next improvement will bring the main function to work.
 
-function maximal_cliques(M)
+function tomita(M, use_tomita)
+	%[R No] = number_sort(R, []);
+
+	%first test case
+	% R = {};
+	
+	% R{1,1} = 1;
+	% R{1,2} = [2, 3];
+	% R{2,1} = 2;
+	% R{2,2} = [1, 3, 4];
+	% R{3,1} = 3;
+	% R{3,2} = [1, 2, 4, 5];
+	% R{4,1} = 4;
+	% R{4,2} = [2, 3];
+	% R{5,1} = 5;
+	% R{5,2} = [3];
+
+	%second test case
+	% R = {};
+	
+	% R{1,1} = 1;
+	% R{1,2} = [2, 3];
+	% R{2,1} = 2;
+	% R{2,2} = [1, 3, 4];
+	% R{3,1} = 3;
+	% R{3,2} = [1, 2, 4, 6, 7];
+	% R{4,1} = 4;
+	% R{4,2} = [2, 3, 5, 6, 7];
+	% R{5,1} = 5;
+	% R{5,2} = [4];
+	% R{6,1} = 6;
+	% R{6,2} = [3, 4, 7];
+	% R{7,1} = 7;
+	% R{7,2} = [3, 4, 6];
+
+	%[R No] = number_sort(R, []);
+	%Qm
+
+	clear('global');
 
 	R = to_adjacency_list(M);
-	MCQ(R);
-  
+
+	if use_tomita
+		tomita_maximal_cliques(R);
+	else
+		MCQ(R);
+	end
+
+
 endfunction
 
 %changes an adjacency matrix
@@ -71,7 +116,7 @@ function MCQ(G)
 	%so the above part works fine.
 
 	g_deg = get_max_degree(G);
-	disp(['max degree', num2str(g_deg)]);
+	%disp(['max degree', num2str(g_deg)]);
 	fflush(stdout);
 	for i = 1:g_deg
 		No(G{i, 1}) = i;
@@ -85,127 +130,132 @@ endfunction
 
 
 %TODO: Proof for two kinds of vertices.
-% function Q_max = tomita(G)
-% 	R = {};
-	
-% 	R{1,1} = 1;
-% 	R{1,2} = [2,3,4];
-% 	R{2,1} = 2;
-% 	R{2,2} = [1,3,4];
-% 	R{3,1} = 3;
-% 	R{3,2} = [1,2,4];
-% 	R = remove_node(R, 3);
-% 	%disp(['the array', R]);
+function Q_max = tomita_maximal_cliques(G)
 
-% 	global Q = {};
-% 	global Q_max = {};
+	global Q = {};
+	global Q_max = {};
 
-% 	%------------------------------%
-% 	%%--%%--SORT PART BEGINS--%%--%%
-% 	%------------------------------%
+	%------------------------------%
+	%%--%%--SORT PART BEGINS--%%--%%
+	%------------------------------%
 
-% 	i = size(G, 1);
-% 	R = G;
-% 	G = {};
-% 	R_min = min_deg_set(R);
+	g_deg = get_max_degree(G);
 
-% 	%I think G doesn't change anywhere
-% 	g_deg = get_max_degree(G);
+	i = size(G, 1);
+	R = G;
+	G = {};
+	R_min = min_deg_set(R);
 
-% 	while size(R_min, 1) ~= size(R, 1)
-% 		if size(R_min, 2) >= 2
-% 			p = find_min_ex_deg(R);
-% 		else
-% 			p = R_min{1,1}; %TODO: what if R_min{1,1} is non-existent
-% 		end
-% 		V(i, :) = p;
-% 		R = remove_node(R, p);
-% 		i = i - 1;
-% 		for j = 1:size(R, 1)
-% 			adj = R{j, 2};
-% 			%use find buddy
-% 			if ismember(adj, p{1,1})
-% 				%some here.
-% 				%i hope this works
-% 				R{j, 2} = R{j, 2}(R{j, 2}~=p{1,1});
-% 			end
-% 			R_min = min_deg_set(R);
-% 		end
-% 	end
+	%disp(['the maximum degree is: ', num2str(i), ' ', num2str(g_deg)]);
 
-% 	%%--%%--SORT PART ENDS--%%--%%
+	disp(['size of R_min', num2str(size(R_min, 1))]);
 
-% 	[R_min, No] = number_sort(R_min, []);
-% 	for j = 1:size(R_min, 1)
-% 		V(j, :) = R_min(j, :);
-% 	end
+	while size(R_min, 1) ~= size(R, 1)
+		if size(R_min, 1) >= 2
+			p = find_min_ex_deg(R_min);
+		else
+			p = R_min{1,1}; %TODO: what if R_min{1,1} is non-existent
+		end
 
-% 	%so I is the index of p
-% 	[m I] = max(No);
+		%disp(['node number: ', num2str(findNode(R_min, p))]);
+
+		V(i, :) = R_min(findNode(R_min, p), :);
+		%disp(['remove node: ', num2str(p)]);
+		R = remove_node(R, p);
+		i = i - 1;
+		for j = 1:size(R, 1)
+			adj = R{j, 2};
+			%use find buddy
+			if any(adj == p)
+				%TODO: weird thing here
+				%the algorithm just does deg = deg - 1
+				%for which I just removed the adjacent thing.
+				R{j, 2} = R{j, 2}(R{j, 2}~=p);
+			end
+		end
+		R_min = min_deg_set(R);
+	end
+
+	%%--%%--SORT PART ENDS--%%--%%
+
+	[R_min, No] = number_sort(R_min, []);
+	for j = 1:size(R_min, 1)
+		V(j, :) = R_min(j, :);
+	end
+
+	%so I is the index of p
+	[m I] = max(No);
 % 	if m == -1 || size(R_min, 1) == 0
 % 		disp('shouldnt be here nononono!');
 % 	end
-% 	%find the index in R that corresponds to I
-% 	%q = findNode(R_min, I);
+	%find the index in R that corresponds to I
+	%q = findNode(R_min, I);
 
-% 	mmax = size(R_min, 1) + g_deg - m;
-% 	m = m + 1;
-% 	i = size(R_min, 1) + 1;
+	mmax = size(R_min, 1) + g_deg - m;
+	m = m + 1;
+	i = size(R_min, 1) + 1;
 
-% 	gotoActive = false;
+	gotoActive = false;
 
-% 	while i <= mmax
-% 		if i > size(V, 1)
-% 			%TODO: THE GOTO THINGIE, for God's sake
-% 			gotoActive = true;
-% 		else
-% 			No(V{i, 1}) = m;
-% 			m = m + 1;
-% 			i = i + 1;
-% 		end
-% 	end
+	while i <= mmax
+		if i > size(V, 1)
+			%TODO: THE GOTO THINGIE, for God's sake
+			gotoActive = true;
+			break;
+		else
+			No(V{i, 1}) = m;
+			m = m + 1;
+			i = i + 1;
+		end
+	end
 
-% 	if !gotoActive
-% 		for i = (mmax+1):size(V, 1)
-% 			No(V{i, 1}) = g_deg + 1;
-% 		end
-% 	end
+	if !gotoActive
+		for i = (mmax+1):size(V, 1)
+			%disp(['sayin what? ', num2str(i)]);
+			No(V{i, 1}) = g_deg + 1;
+		end
+	end
 
-% 	%TODO: NOT SURE IF IT WAS ACTUALLY HERE.
-% 	respects = true;
-% 	for i = 1:size(R_min, 1)
-% 		if length(R_min{i, 2}) ~= (size(R_min, 1) - 1)
-% 			respects = false;
-% 			break;
-% 		end
-% 	end
+	%TODO: NOT SURE IF IT WAS ACTUALLY HERE.
+	respects = true;
+	for i = 1:size(R_min, 1)
+		if length(R_min{i, 2}) ~= (size(R_min, 1) - 1)
+			respects = false;
+			break;
+		end
+	end
 
-% 	if respects
-% 		Q_max = R_min;
-% 	end
+	if respects
+		Q_max = R_min;
+	end
 
-% 	expand(V, No);
-% endfunction
+	expand(V, No);
+endfunction
+
 
 function maxdeg = get_max_degree(G)
 	maxdeg = -1;
 	for i = 1:size(G, 1)
+		%disp(['length: ', num2str(length(G{i, 2}))]);
 		maxdeg = max(length(G{i, 2}), maxdeg);
 	end
 endfunction
 
 %set of vertices with the minimum degree in R
-function minI = min_deg_set(R)
+function R_min = min_deg_set(R)
 	minI = -1;
 	minDeg = inf;
 	for i = 1:size(R, 1)
-		if length(R{i, 2} < minDeg)
-			minI = R{i, 1};
+		if length(R{i, 2}) < minDeg
+			minI = i;
 			minDeg = length(R{i, 2});
-		elseif length(R{i, 2} == minDeg)
-			minI = [minI R{i, 1}];
+		elseif length(R{i, 2}) == minDeg
+			minI = [minI i];
 		end
 	end
+	R_min = {};
+	%doesn't make sense to maintain the name of the vertex
+	R_min(1:length(minI),:) = R(minI,:);
 endfunction
 
 function I = find_min_ex_deg(R)
