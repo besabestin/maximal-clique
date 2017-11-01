@@ -6,8 +6,15 @@
 %matlab translation of the code found in 
 %http://www.dcs.gla.ac.uk/~pat/jchoco/clique/indSetMachrahanish/papers/tomita2006.pdf
 
+%why you should consider this algorithm? :) I initially tried the Bron-kerbosch algorithm but it slows down 
+%exponentially when the graph size increases. This algorithm also has limits but a lot a lot better than the Bron-kerbosch.
+%Check the paper for more information.
+
 %receives the graph in adjacency matrix
 %currently using the MCQ function, next improvement will bring the main function to work.
+
+%To read the result output the Q_max global variable after simply running the function tomita(M, true)
+%This may have to be edited to work in matlab.. I wrote this for the open source octave.
 
 function tomita(M, use_tomita)
 	%[R No] = number_sort(R, []);
